@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CCGS STEM Innovation & Hardware Procurement Dashboard 2026</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              900: '#14532d'
+            },
+            cchs: { DEFAULT: '#8b5cf6', light: '#ede9fe', dark: '#5b21b6' },
+            ccws: { DEFAULT: '#3b82f6', light: '#dbeafe', dark: '#1e40af' },
+            ccis: { DEFAULT: '#10b981', light: '#d1fae5', dark: '#065f46' },
+            quartz: { DEFAULT: '#f97316', hover: '#ea580c' }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    code, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP BRANDING & HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-18">
+        <!-- Logo / Title -->
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-brand-600 via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+            <i data-lucide="cpu" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl font-bold tracking-tight text-slate-900">CCGS STEM Innovation Engine</h1>
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-brand-100 text-brand-700 border border-brand-200">2026 Edition</span>
+            </div>
+            <p class="text-xs text-slate-500 font-medium flex items-center gap-2">
+              <span>Cambridge Court Group of Schools:</span>
+              <span class="text-purple-600 font-semibold">CCHS</span> ·
+              <span class="text-blue-600 font-semibold">CCWS</span> ·
+              <span class="text-emerald-600 font-semibold">CCIS</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Quick Actions -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Simplified Mode Toggle -->
+          <button id="btn-toggle-simplified" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-semibold transition-colors" title="Toggle Plain-English Simplified Descriptions">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span id="simplified-mode-label">Plain English: ON</span>
+          </button>
+          
+          <!-- Jargon Buster Glossary -->
+          <button onclick="openGlossaryModal()" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-semibold border border-amber-200 transition-colors" title="Plain-English STEM Jargon Dictionary">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 text-amber-600"></i>
+            <span class="hidden sm:inline">Jargon Buster</span>
+          </button>
+
+          <button id="btn-open-new-project" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-semibold shadow-sm transition-all transform active:scale-95">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Add Project</span>
+          </button>
+          <button id="btn-export-data" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-medium border border-slate-200 transition-colors">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">Export</span>
+          </button>
+          <button id="btn-reset-data" title="Reset to Excel default data" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN NAVIGATION TABS -->
+      <nav class="flex items-center gap-1 sm:gap-4 -mb-px overflow-x-auto custom-scrollbar pt-1">
+        <button data-tab="matrix" class="nav-tab active flex items-center gap-2 py-3 px-3.5 text-sm font-semibold border-b-2 border-brand-600 text-brand-700 transition-colors whitespace-nowrap">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i>
+          <span>Projects Matrix</span>
+          <span id="tab-count-projects" class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-brand-100 text-brand-800">0</span>
+        </button>
+        <button data-tab="voice-bridge" class="nav-tab flex items-center gap-2 py-3 px-3.5 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-colors whitespace-nowrap">
+          <i data-lucide="radio" class="w-4 h-4 text-purple-600"></i>
+          <span class="flex items-center gap-1.5">
+            <span>Voice Bridge</span>
+            <span class="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-purple-100 text-purple-700 tracking-wide">Sellable Blueprint</span>
+          </span>
+        </button>
+        <button data-tab="procurement" class="nav-tab flex items-center gap-2 py-3 px-3.5 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-colors whitespace-nowrap">
+          <i data-lucide="shopping-cart" class="w-4 h-4 text-orange-600"></i>
+          <span>Procurement Center (Quartz Components)</span>
+        </button>
+        <button data-tab="analytics" class="nav-tab flex items-center gap-2 py-3 px-3.5 text-sm font-medium border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition-colors whitespace-nowrap">
+          <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-600"></i>
+          <span>Cohort Analytics & AI Audit</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN VIEWPORT CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: PROJECTS MATRIX & DASHBOARD                             -->
+    <!-- ============================================================== -->
+    <div id="tab-content-matrix" class="tab-pane space-y-6">
+
+      <!-- CHATBOT STYLE CONVERSATIONAL SEARCH BAR (Modeled after ChatGPT UI) -->
+      <div class="bg-gradient-to-b from-slate-900 to-slate-950 text-white rounded-2xl p-6 sm:p-7 shadow-xl border border-slate-800 space-y-4">
+        <div class="text-center space-y-1.5 max-w-xl mx-auto">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 text-brand-400 text-xs font-semibold border border-slate-700">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Interactive CCGS STEM Chat Assistant</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">What's on the agenda today?</h2>
+          <p class="text-xs sm:text-sm text-slate-400">Ask questions in plain English — find projects, components, costs, or award winners</p>
+        </div>
+
+        <!-- The ChatGPT-style Prompt Input Bar -->
+        <div class="max-w-2xl mx-auto">
+          <div class="relative flex items-center bg-slate-800/90 rounded-full border border-slate-700/80 shadow-inner px-2 py-1.5 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+            <button id="chat-action-btn" title="Open Jargon Buster Glossary" onclick="openGlossaryModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+            <input type="text" id="chat-prompt-input" placeholder="Ask STEM Assistant (e.g. 'Projects under ₹2000', 'Who won CBSE?', 'Farming sensors')..." class="flex-1 bg-transparent px-3 py-1.5 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none font-medium">
+            <button id="chat-mic-btn" title="Voice Search" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+              <i data-lucide="mic" class="w-4 h-4"></i>
+            </button>
+            <button id="chat-send-btn" title="Send Question" class="w-9 h-9 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-md transition-all transform active:scale-95 ml-1">
+              <i data-lucide="arrow-up" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <!-- Quick Suggestion Prompt Chips -->
+          <div class="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap pt-3 text-[11px]">
+            <button onclick="askBot('Show me all projects for agriculture and irrigation')" class="prompt-chip px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition-colors flex items-center gap-1">
+              <span>🌾 Farming & Irrigation</span>
+            </button>
+            <button onclick="askBot('Which projects won national CBSE or INSPIRE awards?')" class="prompt-chip px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition-colors flex items-center gap-1">
+              <span>🏆 National Winners</span>
+            </button>
+            <button onclick="askBot('Show projects with prototype cost under ₹2000')" class="prompt-chip px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700/60 transition-colors flex items-center gap-1">
+              <span>💰 Under ₹2,000</span>
+            </button>
+            <button onclick="askBot('How can we make Voice Bridge sellable?')" class="prompt-chip px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/40 transition-colors flex items-center gap-1">
+              <span>🗣️ Sell Voice Bridge</span>
+            </button>
+            <button onclick="askBot('Which projects have patents in process or eligible?')" class="prompt-chip px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-emerald-500/40 transition-colors flex items-center gap-1">
+              <span>💡 Patent Inventions</span>
+            </button>
+            <button onclick="openGlossaryModal()" class="prompt-chip px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 transition-colors flex items-center gap-1">
+              <span>❓ Jargon Buster (Glossary)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Chat Stream / Output Drawer (slides down when query sent) -->
+        <div id="chat-response-drawer" class="hidden max-w-2xl mx-auto bg-slate-800/95 rounded-xl border border-slate-700 p-4 sm:p-5 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div class="flex items-start justify-between gap-3 border-b border-slate-700/80 pb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-white">STEM AI Assistant</span>
+                <span id="chat-query-echo" class="text-[11px] text-slate-400 block font-normal italic">Query...</span>
+              </div>
+            </div>
+            <button onclick="closeChatDrawer()" class="text-slate-400 hover:text-white p-1 rounded-md">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Bot Text Response -->
+          <div id="chat-answer-text" class="text-xs sm:text-sm text-slate-200 leading-relaxed space-y-2"></div>
+
+          <!-- Matching Project Cards Container inside chat -->
+          <div id="chat-matched-projects" class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2"></div>
+
+          <!-- Bottom sync action -->
+          <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between text-xs">
+            <button id="chat-filter-sync-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-brand-600 hover:bg-brand-500 text-white font-semibold transition-all">
+              <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+              <span>Filter Main Dashboard to These Projects</span>
+            </button>
+            <span class="text-[11px] text-slate-400">Plain English Simplified Search</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top KPI Stats Row -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Total Projects</span>
+            <i data-lucide="folder-kanban" class="w-4 h-4 text-slate-400"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="kpi-total-projects" class="text-2xl font-extrabold text-slate-900">0</span>
+            <span class="text-xs text-slate-500">Across 3 Schools</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Hardware Models</span>
+            <i data-lucide="cpu" class="w-4 h-4 text-emerald-500"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="kpi-hardware-models" class="text-2xl font-extrabold text-emerald-600">0</span>
+            <span class="text-xs text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-medium">BOM Linked</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Apps & Web</span>
+            <i data-lucide="globe" class="w-4 h-4 text-blue-500"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="kpi-software-apps" class="text-2xl font-extrabold text-blue-600">0</span>
+            <span class="text-xs text-slate-500">Play Store/Web</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Total Prototype BOM</span>
+            <i data-lucide="indian-rupee" class="w-4 h-4 text-orange-500"></i>
+          </div>
+          <div class="flex items-baseline gap-1">
+            <span class="text-lg font-bold text-slate-700">₹</span>
+            <span id="kpi-total-budget" class="text-2xl font-extrabold text-slate-900">0</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">National Awards</span>
+            <i data-lucide="trophy" class="w-4 h-4 text-amber-500"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="kpi-national-awards" class="text-2xl font-extrabold text-amber-600">0</span>
+            <span class="text-xs text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-medium">CBSE/INSPIRE</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-slate-500 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider">Avg AI Readiness</span>
+            <i data-lucide="sparkles" class="w-4 h-4 text-purple-500"></i>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span id="kpi-avg-readiness" class="text-2xl font-extrabold text-purple-600">0%</span>
+            <span class="text-xs text-slate-500">Audit Score</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Multi-Facet Filtering Bar -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs space-y-3">
+        <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+          <!-- Live Search Input -->
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input type="text" id="search-input" placeholder="Search projects by name, student, MCU, sensor, or keyword (e.g. ESP32, soil, camera)..." class="w-full pl-10 pr-4 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+          </div>
+
+          <!-- View Mode Toggle -->
+          <div class="flex items-center gap-2 self-end md:self-auto">
+            <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50">
+              <button id="view-mode-grid" class="view-toggle px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 bg-white shadow-xs text-slate-800 transition-all">
+                <i data-lucide="grid-3x3" class="w-3.5 h-3.5"></i>
+                <span>Cards</span>
+              </button>
+              <button id="view-mode-table" class="view-toggle px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-1.5 text-slate-500 hover:text-slate-800 transition-all">
+                <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                <span>Table</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Dropdown Controls -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2.5 pt-2 border-t border-slate-100 text-xs">
+          <!-- Category Filter -->
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Category</label>
+            <select id="filter-category" class="w-full py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-md text-slate-700 font-medium focus:ring-1 focus:ring-brand-500">
+              <option value="ALL">All Categories (14)</option>
+            </select>
+          </div>
+
+          <!-- School Filter -->
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Campus / School</label>
+            <select id="filter-school" class="w-full py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-md text-slate-700 font-medium focus:ring-1 focus:ring-brand-500">
+              <option value="ALL">All Campuses</option>
+              <option value="CCHS">CCHS (High School)</option>
+              <option value="CCWS">CCWS (World School)</option>
+              <option value="CCIS">CCIS (International)</option>
+            </select>
+          </div>
+
+          <!-- Prototype Medium Filter -->
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Medium</label>
+            <select id="filter-type" class="w-full py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-md text-slate-700 font-medium focus:ring-1 focus:ring-brand-500">
+              <option value="ALL">All Prototype Types</option>
+              <option value="Working Model">Working Hardware Model</option>
+              <option value="App">Mobile / Web App</option>
+              <option value="Website">Website / SaaS</option>
+            </select>
+          </div>
+
+          <!-- Readiness Status -->
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Status</label>
+            <select id="filter-status" class="w-full py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-md text-slate-700 font-medium focus:ring-1 focus:ring-brand-500">
+              <option value="ALL">All Statuses</option>
+              <option value="Ready">Ready</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Yet to Start">Yet to Start</option>
+            </select>
+          </div>
+
+          <!-- Sort Order -->
+          <div class="col-span-2 sm:col-span-4 lg:col-span-1">
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Sort By</label>
+            <select id="filter-sort" class="w-full py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-md text-slate-700 font-medium focus:ring-1 focus:ring-brand-500">
+              <option value="readiness-desc">AI Readiness (High to Low)</option>
+              <option value="budget-desc">Budget (High to Low)</option>
+              <option value="budget-asc">Budget (Low to High)</option>
+              <option value="name-asc">Project Name (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Active Filter Badges & Count Display -->
+        <div class="flex items-center justify-between pt-1 text-xs text-slate-500">
+          <div id="filter-status-summary" class="font-medium">
+            Showing <span id="filtered-count" class="font-bold text-slate-800">0</span> matching projects
+          </div>
+          <button id="btn-clear-filters" class="text-brand-600 hover:text-brand-700 font-semibold hover:underline">Clear Filters</button>
+        </div>
+      </div>
+
+      <!-- PROJECTS CONTAINER: GRID VIEW -->
+      <div id="projects-grid-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Dynamic Cards rendered via JS -->
+      </div>
+
+      <!-- PROJECTS CONTAINER: TABLE VIEW -->
+      <div id="projects-table-view" class="hidden bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Project & Team</th>
+                <th class="py-3 px-4">Campus & Grade</th>
+                <th class="py-3 px-4">Category</th>
+                <th class="py-3 px-4">Prototype Medium</th>
+                <th class="py-3 px-4">Prototype BOM (₹)</th>
+                <th class="py-3 px-4">Readiness</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="projects-table-body" class="divide-y divide-slate-100 font-medium text-slate-700">
+              <!-- Dynamic Table Rows rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: VOICE BRIDGE COMMERCIALIZATION HUB                     -->
+    <!-- ============================================================== -->
+    <div id="tab-content-voice-bridge" class="tab-pane hidden space-y-6">
+
+      <!-- Hero Header -->
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 shadow-xl">
+        <div class="relative z-10 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-200 text-xs font-semibold border border-purple-400/30 mb-4">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>Commercialization & Go-To-Market Blueprint</span>
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-2">Voice Bridge Productization Hub</h2>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+            Converting the student competition web prototype (<a href="https://voice-bridge-ideathon.web.app/" target="_blank" class="underline text-purple-300 hover:text-white font-mono">voice-bridge-ideathon.web.app</a>) by Paridhi Singhal & Gopal Sharma (CCHS) into a revenue-generating, certified assistive medical communicator.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <a href="https://voice-bridge-ideathon.web.app/" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-slate-900 font-semibold text-xs sm:text-sm shadow-md hover:bg-slate-100 transition-all">
+              <i data-lucide="external-link" class="w-4 h-4"></i>
+              <span>Open Live Prototype</span>
+            </a>
+            <button onclick="openVoiceBridgeBOM()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs sm:text-sm shadow-md transition-all">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+              <span>Order Hardware BOM (₹2,190)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market Gap & Pricing Comparison -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-rose-500">The Problem: Imported AAC Devices</span>
+            <div class="text-2xl font-black text-slate-900 mt-2">₹2,50,000 – ₹6,00,000</div>
+            <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+              Foreign devices (Tobii Dynavox, PRC-Saltillo) are completely out of reach for 99% of Indian families. They require rigid proprietary tablets, lack Hindi/regional language support, and fail in rural offline areas.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-rose-600 flex items-center gap-1.5">
+            <i data-lucide="x-circle" class="w-4 h-4"></i>
+            <span>Prohibitive Cost Barrier</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border-2 border-purple-500 shadow-md flex flex-col justify-between relative">
+          <div class="absolute -top-3 right-4 px-2.5 py-0.5 rounded-full bg-purple-600 text-white text-[10px] font-bold uppercase tracking-wide">
+            Voice Bridge Positioning
+          </div>
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-600">The Disruption: Dual Offering</span>
+            <div class="text-2xl font-black text-purple-700 mt-2">₹4,499 <span class="text-xs font-normal text-slate-500">Hardware</span> | ₹249/mo <span class="text-xs font-normal text-slate-500">App</span></div>
+            <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+              Real-time assistive speech communicator running on ultra-low-power ESP32-S3 SoC with offline on-device neural TTS, tactile hotkeys, and Indian regional voice cloning at 1/50th the price of imports.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-purple-100 text-xs font-bold text-purple-700 flex items-center gap-1.5">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>75% Gross Margin | Mass Market Reach</span>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-600">Government & Subsidies (B2G)</span>
+            <div class="text-2xl font-black text-slate-900 mt-2">100% Free to Patient</div>
+            <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+              Eligible for procurement under Central Government's <strong>ADIP Scheme</strong> (Assistance to Disabled Persons for Purchase/Fitting of Aids and Appliances) via ALIMCO tenders and GeM portal.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-blue-600 flex items-center gap-1.5">
+            <i data-lucide="award" class="w-4 h-4"></i>
+            <span>ALIMCO & GeM Registered Potential</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hardware Communicator BOM & Buy Links -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">Voice Bridge Hardware Communicator — Bill of Materials (BOM)</h3>
+            <p class="text-xs text-slate-500">Tested and validated components to build the stand-alone wearable assistive communicator unit</p>
+          </div>
+          <div class="text-right">
+            <div class="text-xs text-slate-400 font-medium">Production Unit Cost</div>
+            <div class="text-xl font-extrabold text-brand-600">₹1,085 <span class="text-xs font-normal text-slate-500">(MSRP ₹4,499)</span></div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-3">Component</th>
+                <th class="py-2.5 px-3">Technical Specification</th>
+                <th class="py-2.5 px-3">Qty</th>
+                <th class="py-2.5 px-3">Unit Price</th>
+                <th class="py-2.5 px-3">Primary Supplier</th>
+                <th class="py-2.5 px-3">Alternative Supplier</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-slate-700">
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-900">ESP32-S3 N16R8 SoC Board</td>
+                <td class="py-2.5 px-3">Xtensa LX7 Dual-Core 240MHz, 16MB Flash, 8MB PSRAM</td>
+                <td class="py-2.5 px-3">1</td>
+                <td class="py-2.5 px-3 font-mono font-bold">₹490</td>
+                <td class="py-2.5 px-3">
+                  <a href="https://quartzcomponents.com/products/esp32-s3-wroom-1-n16r8-development-board" target="_blank" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>Quartz Components</span>
+                  </a>
+                </td>
+                <td class="py-2.5 px-3">
+                  <a href="https://robu.in/product/esp32-s3-devkitc-1-n16r8/" target="_blank" class="text-blue-600 hover:underline">Robu.in</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-900">MAX98357A I2S Audio Amplifier</td>
+                <td class="py-2.5 px-3">3.2W Class-D mono audio DAC amplifier, digital I2S</td>
+                <td class="py-2.5 px-3">1</td>
+                <td class="py-2.5 px-3 font-mono font-bold">₹135</td>
+                <td class="py-2.5 px-3">
+                  <a href="https://quartzcomponents.com/products/max98357-i2s-3w-class-d-amplifier-interface-audio-dac-decoder-module" target="_blank" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>Quartz Components</span>
+                  </a>
+                </td>
+                <td class="py-2.5 px-3">
+                  <a href="https://robu.in/product/max98357a-i2s-3w-class-d-amplifier-interface-audio-dac-decoder-module/" target="_blank" class="text-blue-600 hover:underline">Robu.in</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-900">Neodymium Speaker 4Ω 3W (40mm)</td>
+                <td class="py-2.5 px-3">High-speech-intelligibility micro speaker cavity</td>
+                <td class="py-2.5 px-3">1</td>
+                <td class="py-2.5 px-3 font-mono font-bold">₹95</td>
+                <td class="py-2.5 px-3">
+                  <a href="https://quartzcomponents.com/products/3w-4-ohm-mini-speaker" target="_blank" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>Quartz Components</span>
+                  </a>
+                </td>
+                <td class="py-2.5 px-3">
+                  <a href="https://robu.in/product/3w-4-ohm-mini-speaker/" target="_blank" class="text-blue-600 hover:underline">Robu.in</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-900">3.7V 1200mAh Li-Po Battery</td>
+                <td class="py-2.5 px-3">With PCM protection circuit (8+ hours continuous use)</td>
+                <td class="py-2.5 px-3">1</td>
+                <td class="py-2.5 px-3 font-mono font-bold">₹240</td>
+                <td class="py-2.5 px-3">
+                  <a href="https://quartzcomponents.com/products/3-7v-1200mah-lipo-battery" target="_blank" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>Quartz Components</span>
+                  </a>
+                </td>
+                <td class="py-2.5 px-3">
+                  <a href="https://robu.in/product/3-7v-1200mah-lipo-battery/" target="_blank" class="text-blue-600 hover:underline">Robu.in</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-900">TP4056 Type-C USB Charger Module</td>
+                <td class="py-2.5 px-3">5V 1A Li-ion charger with dual battery protection</td>
+                <td class="py-2.5 px-3">1</td>
+                <td class="py-2.5 px-3 font-mono font-bold">₹45</td>
+                <td class="py-2.5 px-3">
+                  <a href="https://quartzcomponents.com/products/tp4056-type-c-lithium-battery-charger-module" target="_blank" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>Quartz Components</span>
+                  </a>
+                </td>
+                <td class="py-2.5 px-3">
+                  <a href="https://robu.in/product/tp4056-type-c-usb-5v-1a-18650-lithium-battery-charger-module/" target="_blank" class="text-blue-600 hover:underline">Robu.in</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-900">0.96 inch I2C OLED Display</td>
+                <td class="py-2.5 px-3">SSD1306 128x64 pixels for phrase confirmation</td>
+                <td class="py-2.5 px-3">1</td>
+                <td class="py-2.5 px-3 font-mono font-bold">₹165</td>
+                <td class="py-2.5 px-3">
+                  <a href="https://quartzcomponents.com/products/0-96-inch-i2c-iic-128x64-oled-display-module" target="_blank" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>Quartz Components</span>
+                  </a>
+                </td>
+                <td class="py-2.5 px-3">
+                  <a href="https://robu.in/product/0-96-inch-i2c-iic-spi-128x64-oled-display-module/" target="_blank" class="text-blue-600 hover:underline">Robu.in</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-900">12-Key Tactile Switch Matrix</td>
+                <td class="py-2.5 px-3">Low-profile tactile keypad for instant speech shortcuts</td>
+                <td class="py-2.5 px-3">1</td>
+                <td class="py-2.5 px-3 font-mono font-bold">₹180</td>
+                <td class="py-2.5 px-3">
+                  <a href="https://quartzcomponents.com/products/4x4-matrix-keypad-module" target="_blank" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>Quartz Components</span>
+                  </a>
+                </td>
+                <td class="py-2.5 px-3">
+                  <a href="https://robu.in/product/4x4-matrix-keypad-module/" target="_blank" class="text-blue-600 hover:underline">Robu.in</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-slate-900">Antimicrobial Enclosure & Lanyard</td>
+                <td class="py-2.5 px-3">Ergonomic ABS drop-proof casing with silicone strap</td>
+                <td class="py-2.5 px-3">1</td>
+                <td class="py-2.5 px-3 font-mono font-bold">₹320</td>
+                <td class="py-2.5 px-3">
+                  <a href="https://quartzcomponents.com/search?q=enclosure" target="_blank" class="inline-flex items-center gap-1 text-orange-600 hover:text-orange-700 font-semibold">
+                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                    <span>Quartz Components</span>
+                  </a>
+                </td>
+                <td class="py-2.5 px-3">
+                  <a href="https://robu.in/product/abs-plastic-project-enclosure-box/" target="_blank" class="text-blue-600 hover:underline">Robu.in</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4-Phase Go-to-Market Roadmap -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-xs mb-3">01</div>
+          <h4 class="font-bold text-slate-900 text-sm mb-1">Clinical Trials & Pilots</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Deploy 15 beta units across Jaipur Speech Therapy & ENT clinics (SMS Hospital, NIMHANS contacts) to obtain therapist clinical endorsement letters.
+          </p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs mb-3">02</div>
+          <h4 class="font-bold text-slate-900 text-sm mb-1">CDSCO & BIS Compliance</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Register on CDSCO SUGAM portal under Class A Medical Device exemption. Certify rechargeable battery pack under BIS IS 16046.
+          </p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs mb-3">03</div>
+          <h4 class="font-bold text-slate-900 text-sm mb-1">GeM Portal & ALIMCO</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Register Voice Bridge as an OEM vendor on Government e-Marketplace (GeM) for public tenders and ADIP welfare scheme distribution.
+          </p>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+          <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs mb-3">04</div>
+          <h4 class="font-bold text-slate-900 text-sm mb-1">D2C & CSR Grants</h4>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            List on Amazon Launchpad and 1mg. Apply for Startup India Seed Fund Scheme (SISFS - ₹20–50 Lakhs grant via MNIT / BITS incubator).
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: COMPONENT PROCUREMENT CENTER (QUARTZ COMPONENTS)       -->
+    <!-- ============================================================== -->
+    <div id="tab-content-procurement" class="tab-pane hidden space-y-6">
+
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="p-2 rounded-lg bg-orange-100 text-orange-600 font-bold">
+                <i data-lucide="store" class="w-5 h-5"></i>
+              </span>
+              <div>
+                <h3 class="text-lg font-bold text-slate-900">STEM Component Procurement Directory</h3>
+                <p class="text-xs text-slate-500">Direct component buy links with price benchmarks across Quartz Components and Robu.in</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="text" id="procure-search" placeholder="Search component (e.g. ESP32, MQ-3, servo)..." class="py-1.5 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 uppercase tracking-wider">
+              <tr>
+                <th class="py-3 px-3">Component Name</th>
+                <th class="py-3 px-3">Category</th>
+                <th class="py-3 px-3">Est. Price Range</th>
+                <th class="py-3 px-3">Quartz Components Direct Link</th>
+                <th class="py-3 px-3">Robu.in Link</th>
+                <th class="py-3 px-3">Availability</th>
+              </tr>
+            </thead>
+            <tbody id="procurement-table-body" class="divide-y divide-slate-100 text-slate-700 font-medium">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: COHORT ANALYTICS & AI AUDIT                            -->
+    <!-- ============================================================== -->
+    <div id="tab-content-analytics" class="tab-pane hidden space-y-6">
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Chart 1: Category Distribution -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <h3 class="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-brand-600"></i>
+            <span>Project Distribution by Competition Category</span>
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">Total projects indexed across 14 specialized domains</p>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chart-categories"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Prototype Budget by Flagship Project -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+          <h3 class="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-blue-600"></i>
+            <span>Prototype BOM Cost (₹ INR) for Selected Projects</span>
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">Single prototype hardware build budget</p>
+          <div class="h-64 flex items-center justify-center">
+            <canvas id="chart-budgets"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Readiness Audit Table -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <h3 class="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-4 h-4 text-purple-600"></i>
+          <span>CCGS STEM Portfolio AI Readiness & Patent Audit</span>
+        </h3>
+        <p class="text-xs text-slate-500 mb-3">Evaluation based on prototype maturity, patentability (IDF status), and competition pitch readiness</p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-3">Project</th>
+                <th class="py-2.5 px-3">School</th>
+                <th class="py-2.5 px-3">Readiness Score</th>
+                <th class="py-2.5 px-3">Competition Potential</th>
+                <th class="py-2.5 px-3">Patent Viability</th>
+                <th class="py-2.5 px-3">Commercial Scalability</th>
+                <th class="py-2.5 px-3">Immediate Next Action</th>
+              </tr>
+            </thead>
+            <tbody id="analytics-table-body" class="divide-y divide-slate-100 text-slate-700 font-medium">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: PROJECT DETAILS & SPECS / BOM INSPECTION                -->
+  <!-- ============================================================== -->
+  <div id="modal-project-inspect" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-200 flex items-start justify-between bg-slate-50/70">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span id="modal-school-badge" class="px-2 py-0.5 text-xs font-bold rounded-md bg-purple-100 text-purple-700">CCHS</span>
+            <span id="modal-category-badge" class="px-2 py-0.5 text-xs font-medium rounded-md bg-slate-200 text-slate-700">Category</span>
+            <span id="modal-status-badge" class="px-2 py-0.5 text-xs font-semibold rounded-md bg-emerald-100 text-emerald-800">Ready</span>
+          </div>
+          <h3 id="modal-project-name" class="text-xl sm:text-2xl font-bold text-slate-900">Project Title</h3>
+          <p id="modal-team-info" class="text-xs text-slate-500 font-medium">Team Leader: Name · Grade 9 · Mentors: Puru Sir</p>
+        </div>
+        <button id="modal-close-btn" class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 rounded-lg transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Internal Tabs -->
+      <div class="flex border-b border-slate-200 px-5 bg-white text-xs font-semibold text-slate-600 gap-4 overflow-x-auto">
+        <button data-modaltab="overview" class="modal-tab active py-3 border-b-2 border-brand-600 text-brand-700">Overview & Pitch</button>
+        <button data-modaltab="specs" class="modal-tab py-3 border-b-2 border-transparent hover:text-slate-900">Technical Specs</button>
+        <button data-modaltab="bom" class="modal-tab py-3 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1">
+          <span>Bill of Materials (BOM)</span>
+          <span class="px-1.5 py-0.2 rounded bg-orange-100 text-orange-700 text-[10px]">Quartz Links</span>
+        </button>
+        <button data-modaltab="ai" class="modal-tab py-3 border-b-2 border-transparent hover:text-slate-900 flex items-center gap-1 text-purple-600">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          <span>AI Audit & Analysis</span>
+        </button>
+      </div>
+
+      <!-- Modal Body Content -->
+      <div class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+        
+        <!-- Modal Tab 1: Overview -->
+        <div id="modaltab-pane-overview" class="space-y-4 text-xs">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <h4 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+              <span>Problem Statement</span>
+            </h4>
+            <p id="modal-problem" class="text-slate-600 leading-relaxed"></p>
+          </div>
+
+          <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200/60">
+            <h4 class="font-bold text-emerald-950 mb-1 flex items-center gap-1.5">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+              <span>Engineering Solution</span>
+            </h4>
+            <p id="modal-solution" class="text-emerald-900 leading-relaxed"></p>
+          </div>
+
+          <!-- Achievements & External Links -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white">
+              <h5 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Official Achievements</h5>
+              <div id="modal-achievements" class="font-semibold text-slate-800"></div>
+            </div>
+
+            <div class="p-3.5 rounded-xl border border-slate-200 bg-white">
+              <h5 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">External Submissions & Links</h5>
+              <div id="modal-links" class="flex flex-wrap gap-2 pt-1"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Tab 2: Technical Specs -->
+        <div id="modaltab-pane-specs" class="hidden space-y-4 text-xs">
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="w-full text-left">
+              <tbody id="modal-specs-table" class="divide-y divide-slate-100">
+                <!-- Specs rows inserted dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Tab 3: BOM & Quartz Components -->
+        <div id="modaltab-pane-bom" class="hidden space-y-4 text-xs">
+          <div class="flex items-center justify-between bg-orange-50/70 p-3 rounded-xl border border-orange-200">
+            <div>
+              <span class="font-bold text-orange-950">Component Sourcing & Procurement Matrix</span>
+              <p class="text-[11px] text-orange-700">Click any direct link to purchase from Quartz Components or verified Indian suppliers.</p>
+            </div>
+            <div class="text-right">
+              <div class="text-[11px] text-slate-500">Total Prototype Cost</div>
+              <div id="modal-bom-total" class="text-base font-extrabold text-slate-900">₹0</div>
+            </div>
+          </div>
+
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 text-[11px] uppercase">
+                <tr>
+                  <th class="py-2.5 px-3">Component</th>
+                  <th class="py-2.5 px-3">Specification</th>
+                  <th class="py-2.5 px-3">Qty</th>
+                  <th class="py-2.5 px-3">Unit Price</th>
+                  <th class="py-2.5 px-3">Subtotal</th>
+                  <th class="py-2.5 px-3 text-right">Direct Buy Link</th>
+                </tr>
+              </thead>
+              <tbody id="modal-bom-table" class="divide-y divide-slate-100">
+                <!-- BOM rows inserted dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal Tab 4: AI Audit & Analysis -->
+        <div id="modaltab-pane-ai" class="hidden space-y-4 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 flex flex-col justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-purple-600">AI Readiness Score</span>
+              <div id="modal-ai-score" class="text-3xl font-extrabold text-purple-700 my-1">0%</div>
+              <span class="text-[11px] text-purple-600">Pre-Flight Audit Grade</span>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 flex flex-col justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Competition Tier</span>
+              <div id="modal-ai-comp" class="text-sm font-extrabold text-blue-900 my-1">National Level</div>
+              <span class="text-[11px] text-blue-600">CBSE / INSPIRE MANAK</span>
+            </div>
+
+            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200 flex flex-col justify-between">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Patent Potential</span>
+              <div id="modal-ai-patent" class="text-sm font-extrabold text-emerald-900 my-1">Eligible (IDF)</div>
+              <span class="text-[11px] text-emerald-600">Novelty Disclosure</span>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
+            <h5 class="font-bold text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="message-square" class="w-4 h-4 text-purple-600"></i>
+              <span>Pitch Critique & Defense Recommendation</span>
+            </h5>
+            <p id="modal-ai-pitch" class="text-slate-600 leading-relaxed"></p>
+          </div>
+
+          <div class="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-2">
+            <h5 class="font-bold text-rose-950 flex items-center gap-1.5">
+              <i data-lucide="shield-alert" class="w-4 h-4 text-rose-600"></i>
+              <span>Critical Technical & Safety Risks</span>
+            </h5>
+            <ul id="modal-ai-risks" class="list-disc list-inside text-rose-900 space-y-1"></ul>
+          </div>
+
+          <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
+            <h5 class="font-bold text-emerald-950 flex items-center gap-1.5">
+              <i data-lucide="list-checks" class="w-4 h-4 text-emerald-600"></i>
+              <span>Next Actionable Engineering Sprints</span>
+            </h5>
+            <ol id="modal-ai-nextsteps" class="list-decimal list-inside text-emerald-900 space-y-1 font-medium"></ol>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+        <button id="modal-edit-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-white transition-colors">
+          <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+          <span>Edit Project</span>
+        </button>
+        <button onclick="closeInspectModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition-colors">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: ADD / EDIT PROJECT FORM                                 -->
+  <!-- ============================================================== -->
+  <div id="modal-project-form" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+      
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <h3 id="form-modal-title" class="text-lg font-bold text-slate-900">Add New STEM Project</h3>
+        <button id="form-modal-close-btn" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="project-form" class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
+        <input type="hidden" id="form-project-id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="sm:col-span-2">
+            <label class="block font-semibold text-slate-700 mb-1">Project Name *</label>
+            <input type="text" id="form-name" required placeholder="e.g. Smart IoT Soil Analyzer" class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Campus / School *</label>
+            <select id="form-school" required class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+              <option value="CCIS">CCIS (International School)</option>
+              <option value="CCHS">CCHS (High School)</option>
+              <option value="CCWS">CCWS (World School)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Grade / Class *</label>
+            <input type="text" id="form-grade" required placeholder="e.g. Grade 9 Zen" class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Competition Category *</label>
+            <input type="text" id="form-category" required placeholder="e.g. Agriculture & Agri-Tech" class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Prototype Medium *</label>
+            <select id="form-type" required class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+              <option value="Working Model">Working Model (Hardware)</option>
+              <option value="App">Mobile App / APK</option>
+              <option value="Website">Website / Web App</option>
+              <option value="Combined">Combined (Hardware + App)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Team Leader *</label>
+            <input type="text" id="form-lead" required placeholder="e.g. Aarav Sharma" class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Team Members (comma separated)</label>
+            <input type="text" id="form-members" placeholder="e.g. Aarav, Rohan, Sneha" class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Mentors</label>
+            <input type="text" id="form-mentors" placeholder="e.g. Puru Sir, Chirag Sir" class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Prototype Budget (₹)</label>
+            <input type="number" id="form-budget" placeholder="e.g. 2500" class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Problem Statement</label>
+          <textarea id="form-problem" rows="2" placeholder="Describe the acute pain point..." class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Engineering Solution</label>
+          <textarea id="form-solution" rows="2" placeholder="Describe how the tech/hardware solves it..." class="w-full py-2 px-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Presentation / Pitch Deck URL</label>
+            <input type="url" id="form-ppt" placeholder="https://canva.com or Google Drive" class="w-full py-2 px-3 border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Live Web / App Link</label>
+            <input type="url" id="form-app" placeholder="https://...web.app or vercel.app" class="w-full py-2 px-3 border border-slate-300 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Core Tech Stack (comma separated)</label>
+          <input type="text" id="form-tech" placeholder="e.g. ESP32, Capacitive Moisture Sensor, Firebase, Flutter" class="w-full py-2 px-3 border border-slate-300 rounded-lg">
+        </div>
+
+        <div class="p-3 border-t border-slate-200 flex justify-end gap-2 pt-4">
+          <button type="button" onclick="closeFormModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-lg shadow-sm">Save Project</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: PLAIN-ENGLISH JARGON BUSTER / GLOSSARY                  -->
+  <!-- ============================================================== -->
+  <div id="modal-glossary" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs hidden flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150">
+      
+      <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-amber-50/60">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-800 flex items-center justify-center font-bold">
+            <i data-lucide="book-open" class="w-5 h-5 text-amber-700"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-slate-900">STEM Jargon Buster & Glossary</h3>
+            <p class="text-xs text-slate-500">Everyday, plain-English definitions of technical terms for students and parents</p>
+          </div>
+        </div>
+        <button onclick="closeGlossaryModal()" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto custom-scrollbar flex-1 space-y-3" id="glossary-items-container">
+        <!-- Rendered dynamically from window.STEM_GLOSSARY -->
+      </div>
+
+      <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+        <span class="text-slate-500">Cambridge Court Group of Schools Innovation Framework</span>
+        <button onclick="closeGlossaryModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white font-semibold transition-colors">
+          Got It
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOAD DATA SCRIPT & APPLICATION LOGIC -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
